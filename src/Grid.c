@@ -1,18 +1,13 @@
+#include <stdlib.h>
+
 #include <SFML/Graphics.h>
+
 #include "Array2dUtil.h"
+#include "Geometry.h"
+#include "Grid.h"
 
-typedef struct Grid{
-    int height;
-    int width;
-    int density;
-    int ySpots;
-    int xSpots;
-    int numOccupied;
-    int *array; 
-} Grid;
-
-Grid *nvGrid_new(int height, int width, int density){
-    Grid *tempGrid = (Grid *)malloc(sizeof(Grid));
+grid *nvGrid_create(int height, int width, int density){
+    grid *tempGrid = (grid *)malloc(sizeof(grid));
     tempGrid->height = height;
     tempGrid->width = width;
     tempGrid->density = density;
@@ -30,42 +25,47 @@ Grid *nvGrid_new(int height, int width, int density){
     return tempGrid;
 }
 
-void nvGrid_occupySpot(Grid *g, int y, int x){
+void nvGrid_occupySpot(grid *g, int x, int y){
     *(g->array + y*g->xSpots + x) = 1;
     g->numOccupied++;
 }
 
-void nvGrid_print(Grid *g){
+void nvGrid_print(grid *g){
     utArray2d_print(g->array, g->xSpots, g->ySpots);
 }
 
-int nvGrid_isOccupied(Grid *g, int r, int c){
-    return *(g->array + r*g->xSpots + c) == 1;
+int nvGrid_isOccupied(grid *g, int x, int y){
+    return *(g->array + y*g->xSpots + x) == 1;
 }
 
-sfVector2f *nvGrid_getOccupied(Grid *g){
-    sfVector2f *positions = (sfVector2f *)malloc(sizeof(sfVector2f)*g->numOccupied);
+geVec2d *nvGrid_getOccupied(grid *g){
+    geVec2d *positions = (geVec2d *)malloc(sizeof(geVec2d)*g->numOccupied);
     int counter = 0;
     for (int r = 0; r < g->ySpots; r++){
         for (int c = 0; c < g->xSpots; c++){
-            if (nvGrid_isOccupied(g, r, c) == 1){
-                positions[counter++] = (sfVector2f){r, c};
+            if (nvGrid_isOccupied(g, c, r) == 1){
+                positions[counter++] = (geVec2d){c, r};
             }
         }
     }
     return positions;
 }
 
-void nvGrid_draw(Grid *g, sfRenderWindow *window){
-    sfVector2f *rectPositions = nvGrid_getOccupied(g);
+void nvGrid_drawSpot(grid *g, int x, int y, sfColor color, sfRenderWindow *window){
+    sfRectangleShape *rect = sfRectangleShape_create();
+    sfRectangleShape_setFillColor(rect, color);
+    sfVector2u windowSize = sfRenderWindow_getSize(window);
+    sfVector2f rectSize = {windowSize.x/g->xSpots, windowSize.y/g->ySpots};
+    sfVector2f rectPosition = {x*rectSize.x, y*rectSize.y};
+    sfRectangleShape_setSize(rect, rectSize);
+    sfRectangleShape_setPosition(rect, rectPosition);
+    sfRenderWindow_drawRectangleShape(window, rect, NULL);
+    sfRectangleShape_destroy(rect);
+}
+
+void nvGrid_draw(grid *g, sfRenderWindow *window){
+    geVec2d *rectPositions = nvGrid_getOccupied(g);
     for (int i = 0; i < g->numOccupied; i++){
-        sfRectangleShape *rect = sfRectangleShape_create();
-        sfRectangleShape_setFillColor(rect, sfGreen);
-        sfVector2u windowSize = sfRenderWindow_getSize(window);
-        sfVector2f rectSize = {windowSize.x/g->xSpots, windowSize.y/g->ySpots};
-        sfRectangleShape_setSize(rect, rectSize);
-        sfRectangleShape_setPosition(rect, (sfVector2f){rectPositions[i].y*rectSize.y, rectPositions[i].x*rectSize.x});
-        sfRenderWindow_drawRectangleShape(window, rect, NULL);
-        sfRectangleShape_destroy(rect);
+        nvGrid_drawSpot(g, rectPositions[i].x, rectPositions[i].y, sfWhite, window);
     }
 }

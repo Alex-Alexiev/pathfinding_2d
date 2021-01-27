@@ -5,14 +5,21 @@
 
 #include "Array2dUtil.h"
 #include "Grid.h"
+#include "NavSpace.h"
 
 int main(){
 
-    Grid *testGrid = nvGrid_new(10, 10, 2);
+    grid *testGrid = nvGrid_create(10, 10, 2);
     
     for (int i = 0; i < 10; i++){
         nvGrid_occupySpot(testGrid, 10, i+5);
     }
+
+    geVec2d start = {0, 0};
+    geVec2d end = {19, 19};
+
+    navSpace *testNavSpace = nvNavSpace_create(testGrid, start, end);
+
 
     //printf("%d\n", testGrid->numOccupied);
     //nvGrid_print(testGrid);
@@ -25,7 +32,7 @@ int main(){
 
     sfRectangleShape *testRect = sfRectangleShape_create();
     sfRectangleShape_setFillColor(testRect, sfGreen);
-    sfRectangleShape_setPosition(testRect, (sfVector2f){0, 0});
+    sfRectangleShape_setPosition(testRect, (sfVector2f){100, 50});
     sfRectangleShape_setSize(testRect, (sfVector2f){10, 10});
 
     sfEvent event;
@@ -41,12 +48,12 @@ int main(){
                 view_rectangle.width = event.size.width;
                 view_rectangle.height = event.size.height;
                 sfView_reset(new_view, view_rectangle);
-                //sfRenderWindow_setView(mainWindow, new_view);
+                sfRenderWindow_setView(mainWindow, new_view);
             }
         }
 
         sfRenderWindow_clear(mainWindow, sfBlack);
-        nvGrid_draw(testGrid, mainWindow);
+        nvNavSpace_draw(testNavSpace, mainWindow);
         //sfRenderWindow_drawCircleShape(mainWindow, circle, NULL);
         //sfRenderWindow_drawRectangleShape(mainWindow, testRect, NULL);
         sfRenderWindow_display(mainWindow);

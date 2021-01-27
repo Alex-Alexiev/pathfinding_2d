@@ -3,18 +3,30 @@
 
 #include <SFML/Graphics.h>
 
-typedef struct Grid Grid;
+#include "Geometry.h"
 
-Grid *nvGrid_new(int height, int width, int density);
+typedef struct grid{
+    int height;
+    int width;
+    int density;
+    int ySpots;
+    int xSpots;
+    int numOccupied;
+    int *array; 
+} grid;
 
-void nvGrid_occupySpot(Grid *g, int y, int x);
+grid *nvGrid_create(int height, int width, int density);
 
-void nvGrid_print(Grid *g);
+void nvGrid_occupySpot(grid *g, int x, int y);
 
-int nvGrid_isOccupied(Grid *g, int r, int c);
+void nvGrid_print(grid *g);
 
-sfVector2f *nvGrid_getOccupied(Grid *g);
+int nvGrid_isOccupied(grid *g, int r, int c);
 
-void nvGrid_draw(Grid *g, sfRenderWindow *window);
+geVec2d *nvGrid_getOccupied(grid *g);
+
+void nvGrid_draw(grid *g, sfRenderWindow *window);
+
+void nvGrid_drawSpot(grid *g, int x, int y, sfColor color, sfRenderWindow *window);
 
 #endif
